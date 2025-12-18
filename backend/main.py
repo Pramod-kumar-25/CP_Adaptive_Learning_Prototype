@@ -88,6 +88,10 @@ class ControlAction(BaseModel):
     action_type: str
     new_mode: str
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 # --- Alert Logic ---
 event_buffer: Dict[str, List[datetime]] = {}
 
@@ -124,29 +128,41 @@ async def root():
 
 @app.get("/students")
 async def get_students():
-    # Return both online and historical students from database
     if supabase:
         try:
-            # Get all learners from behavior events to show in the list
-            res = supabase.table("behavior_events").select("user_id").eq("event_type", "login").execute()
-            uids = list(set([item['user_id'] for item in res.data]))
+            # Query the users table for learners only
+            res = supabase.table("users").select("*").eq("role", "learner").execute()
+            learners_from_db = res.data
             
+            # Cross-reference with active users for live status
             students = []
-            for uid in uids:
+            for l in learners_from_db:
+                uid = l['id']
                 is_online = uid in manager.active_users
-                email = manager.active_users[uid]['email'] if is_online else uid.replace('_', '@')
                 mode = manager.active_users[uid]['mode'] if is_online else "video"
                 students.append({
                     "id": uid,
-                    "email": email,
+                    "email": l['email'],
                     "mode": mode,
                     "status": "online" if is_online else "offline"
                 })
+            
+            # Also add any online learners not yet in DB (robustness)
+            for uid, info in manager.active_users.items():
+                if info['role'] == 'learner' and not any(s['id'] == uid for s in students):
+                    students.append({
+                        "id": uid,
+                        "email": info['email'],
+                        "mode": info['mode'],
+                        "status": "online"
+                    })
+            
             return students
         except Exception as e:
             print(f"Error fetching students: {e}")
             return []
     return []
+
 
 @app.get("/alerts")
 async def get_alerts():
@@ -165,6 +181,54 @@ async def get_activities():
             return res.data
         except: return []
     return []
+
+@app.post("/register_user")
+async def register_user(user: dict = Body(...)):
+    if supabase:
+        try:
+            # Check if user exists
+            res = supabase.table("users").select("*").eq("id", user["id"]).execute()
+            if not res.data:
+                # Use default password if not provided
+                if "password" not in user:
+                    user["password"] = "pass123"
+                supabase.table("users").insert(user).execute()
+            return {"status": "success"}
+        except Exception as e:
+            print(f"Register error: {e}")
+            return {"status": "error"}
+    return {"status": "no_db"}
+
+@app.post("/login")
+async def login(req: LoginRequest):
+    if supabase:
+        try:
+            res = supabase.table("users").select("*").eq("email", req.email).eq("password", req.password).execute()
+            if res.data:
+                user = res.data[0]
+                return {
+                    "status": "success",
+                    "user": {
+                        "id": user["id"],
+                        "email": user["email"],
+                        "role": user["role"]
+                    }
+                }
+            else:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+        except Exception as e:
+            if isinstance(e, HTTPException): raise e
+            print(f"Login error: {e}")
+            raise HTTPException(status_code=500, detail="Database error")
+    
+    # Mock fallback for demo if no Supabase
+    if req.email == "tutor@example.com" and req.password == "admin123":
+        return {"status": "success", "user": {"id": "tutor_admin", "email": req.email, "role": "tutor"}}
+    if "learner" in req.email and req.password == "pass123":
+        uid = req.email.replace("@", "_").replace(".", "_")
+        return {"status": "success", "user": {"id": uid, "email": req.email, "role": "learner"}}
+    
+    raise HTTPException(status_code=401, detail="Invalid credentials")
 
 @app.post("/events")
 async def receive_event(event: BehaviorEvent):

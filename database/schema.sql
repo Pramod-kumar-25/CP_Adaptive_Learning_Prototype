@@ -4,6 +4,7 @@
 CREATE TABLE users (
     id TEXT PRIMARY KEY, -- e.g., 'learner_example_com'
     email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL DEFAULT 'pass123',
     role TEXT CHECK (role IN ('learner', 'tutor')) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

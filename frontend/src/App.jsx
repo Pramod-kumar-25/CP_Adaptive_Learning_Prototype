@@ -9,17 +9,16 @@ export default function App() {
     const [user, setUser] = useState(null); // { email, role, id }
     const [view, setView] = useState('home'); // home, learner, tutor
 
-    const handleLogin = (email, role) => {
-        const newUser = { email, role, id: email.replace(/[^a-zA-Z0-9]/g, '_') };
-        setUser(newUser);
-        setView(role === 'learner' ? 'learner' : 'tutor');
+    const handleLogin = (userData) => {
+        setUser(userData);
+        setView(userData.role === 'learner' ? 'learner' : 'tutor');
 
-        // Track login
+        // Track login event
         fetch(`${API_BASE}/events`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                user_id: newUser.id,
+                user_id: userData.id,
                 event_type: 'login',
                 metadata: { timestamp: new Date().toISOString() }
             })
@@ -27,17 +26,6 @@ export default function App() {
     };
 
     const handleLogout = () => {
-        if (user) {
-            fetch(`${API_BASE}/events`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: user.id,
-                    event_type: 'logout',
-                    metadata: { timestamp: new Date().toISOString() }
-                })
-            });
-        }
         setUser(null);
         setView('home');
     };
@@ -47,31 +35,102 @@ export default function App() {
     if (view === 'tutor') return <TutorDashboard user={user} onLogout={handleLogout} />;
 }
 
-// --- HOME PAGE ---
+// --- HOME / ROLE SELECTION ---
 function Home({ onLogin }) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="card glass max-w-md w-full"
-            >
-                <h1 className="text-4xl font-bold mb-2">Universal Remote</h1>
-                <p className="text-muted mb-8">Adaptive Learning Prototype</p>
+    const [step, setStep] = useState('selection'); // selection, tutorLogin, learnerLogin
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-                <div className="flex flex-col gap-4">
-                    <button
-                        onClick={() => onLogin('learner@example.com', 'learner')}
-                        className="btn btn-primary w-full justify-center"
-                    >
-                        <User size={20} /> Login as Learner
+    const handleSubmit = async (e, expectedRole) => {
+        e.preventDefault();
+        setError('');
+        try {
+            const res = await fetch(`${API_BASE}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                if (data.user.role !== expectedRole) {
+                    setError(`Access Denied: Use the ${data.user.role === 'tutor' ? 'Tutor' : 'Learner'} login page.`);
+                    return;
+                }
+                onLogin(data.user);
+            } else {
+                setError(data.detail || 'Invalid credentials');
+            }
+        } catch (e) {
+            setError('Connection failed');
+        }
+    };
+
+    if (step === 'selection') {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card glass max-w-lg w-full p-12 text-center">
+                    <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Universal Remote</h1>
+                    <p className="text-muted mb-12 text-lg">Choose your portal to enter the adaptive classroom.</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <button onClick={() => setStep('learnerLogin')} className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-primary/20 hover:border-primary/50 transition-all group">
+                            <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                <User size={32} />
+                            </div>
+                            <span className="font-bold text-xl">Learner Portal</span>
+                        </button>
+
+                        <button onClick={() => setStep('tutorLogin')} className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-accent/20 hover:border-accent/50 transition-all group">
+                            <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+                                <Radio size={32} />
+                            </div>
+                            <span className="font-bold text-xl">Tutor Console</span>
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
+
+    const isTutor = step === 'tutorLogin';
+
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card glass max-w-md w-full p-8">
+                <button onClick={() => setStep('selection')} className="text-muted hover:text-white mb-6 flex items-center gap-2 text-sm">
+                    <LogOut size={16} className="rotate-180" /> Back to selection
+                </button>
+
+                <h2 className="text-3xl font-bold mb-2">{isTutor ? 'Tutor Console' : 'Learner Login'}</h2>
+                <p className="text-muted mb-8 text-sm">Please enter credentials to continue.</p>
+
+                <form onSubmit={(e) => handleSubmit(e, isTutor ? 'tutor' : 'learner')} className="flex flex-col gap-4">
+                    <div className="text-left space-y-1">
+                        <label className="text-xs font-bold uppercase text-muted px-1">Email</label>
+                        <input type="email" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:border-primary/50" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    </div>
+                    <div className="text-left space-y-1">
+                        <label className="text-xs font-bold uppercase text-muted px-1">Password</label>
+                        <input type="password" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:border-primary/50" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    </div>
+                    {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
+                    <button type="submit" className={`btn ${isTutor ? 'btn-accent' : 'btn-primary'} w-full justify-center mt-4`}>
+                        Enter {isTutor ? 'Console' : 'Classroom'}
                     </button>
-                    <button
-                        onClick={() => onLogin('tutor@example.com', 'tutor')}
-                        className="btn btn-outline w-full justify-center"
-                    >
-                        <Radio size={20} /> Login as Tutor
-                    </button>
+                </form>
+
+                <div className="mt-8 pt-6 border-t border-white/5 text-[10px] text-muted space-y-1">
+                    <p className="font-bold mb-1">Demo Credentials:</p>
+                    {isTutor ? (
+                        <p>Tutor: tutor@example.com / admin123</p>
+                    ) : (
+                        <>
+                            <p>Learners: (pramod, jaswanth, abhi)@example.com</p>
+                            <p>Password: pass123</p>
+                        </>
+                    )}
                 </div>
             </motion.div>
         </div>
@@ -80,9 +139,24 @@ function Home({ onLogin }) {
 
 // --- LEARNER DASHBOARD ---
 function LearnerDashboard({ user, onLogout }) {
-    const [mode, setMode] = useState('video'); // video, text, audio
+    const [mode, setMode] = useState('video');
     const [ws, setWs] = useState(null);
-    const scrollRef = useRef(null);
+    const playerRef = useRef(null);
+    const audioRef = useRef(null);
+    const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+    // Audio Play/Pause tracking
+    const handleAudio = (type) => {
+        if (!audioRef.current) return;
+        if (type === 'play') {
+            audioRef.current.play();
+            setIsAudioPlaying(true);
+        } else {
+            audioRef.current.pause();
+            setIsAudioPlaying(false);
+        }
+        trackEvent(type, { mode: 'audio' });
+    };
 
     useEffect(() => {
         // Pass role and email in query params for backend to track
@@ -109,6 +183,51 @@ function LearnerDashboard({ user, onLogout }) {
             })
         }).catch(err => console.error("Event Track Fail:", err));
     };
+
+
+    useEffect(() => {
+        if (mode === 'video') {
+            // Load YouTube API
+            if (!window.YT) {
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                const firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            }
+
+            window.onYouTubeIframeAPIReady = () => {
+                createPlayer();
+            };
+
+            if (window.YT && window.YT.Player) {
+                createPlayer();
+            }
+        }
+
+        function createPlayer() {
+            playerRef.current = new window.YT.Player('yt-player', {
+                height: '100%',
+                width: '100%',
+                videoId: 'dQw4w9WgXcQ',
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 1,
+                },
+                events: {
+                    'onStateChange': (event) => {
+                        if (event.data === window.YT.PlayerState.PLAYING) trackEvent('play');
+                        if (event.data === window.YT.PlayerState.PAUSED) trackEvent('pause');
+                    }
+                }
+            });
+        }
+
+        return () => {
+            if (playerRef.current && playerRef.current.destroy) {
+                playerRef.current.destroy();
+            }
+        };
+    }, [mode]);
 
     // Idle Tracking
     useEffect(() => {
@@ -174,19 +293,20 @@ function LearnerDashboard({ user, onLogout }) {
                         <h2 className="text-3xl font-bold mb-6 capitalize">{mode} Lessons</h2>
 
                         {mode === 'video' && (
-                            <div className="card glass aspect-video p-0 overflow-hidden">
-                                <iframe
-                                    width="100%"
-                                    height="100%"
-                                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                                    title="Video Player"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    onLoad={() => trackEvent('video_load')}
-                                />
-                                <div className="p-4 flex gap-4">
-                                    <button onClick={() => trackEvent('pause')} className="btn btn-outline"><Pause size={18} /> Mock Pause</button>
-                                    <button onClick={() => trackEvent('play')} className="btn btn-outline"><Play size={18} /> Mock Play</button>
+                            <div className="flex flex-col h-[82vh] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/5 group relative">
+                                <div id="yt-player" className="w-full h-full absolute inset-0"></div>
+                                <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/60 to-transparent backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div className="flex justify-between items-end">
+                                        <div>
+                                            <div className="text-primary text-xs font-bold uppercase tracking-wider mb-2">Module 1 • Introduction</div>
+                                            <h2 className="text-3xl font-bold text-white mb-1">Neural Networks: The Complete Foundation</h2>
+                                            <p className="text-sm text-white/50">Comprehensive Behavioral Tracking Active</p>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-xs text-green-500 bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
+                                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                            LIVE SENSOR DATA
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -208,11 +328,40 @@ function LearnerDashboard({ user, onLogout }) {
 
                         {mode === 'audio' && (
                             <div className="card glass flex flex-col items-center py-12">
-                                <Music size={64} className="text-primary mb-6 animate-pulse" />
-                                <h3 className="text-xl font-bold mb-2">Podcast: The Future of Pedagogy</h3>
-                                <p className="text-muted mb-8">Episode 12 • 45 mins</p>
-                                <div className="flex gap-4">
-                                    <button onClick={() => trackEvent('audio_play')} className="btn btn-primary rounded-full w-16 h-16 justify-center"><Play size={24} /></button>
+                                <div className={`w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center mb-6 border-4 border-primary/20 ${isAudioPlaying ? 'animate-pulse' : ''}`}>
+                                    <Music size={64} className="text-primary" />
+                                </div>
+                                <h3 className="text-2xl font-bold mb-2">Podcast: The Future of Pedagogy</h3>
+                                <p className="text-muted mb-8">Episode 12 • Instrumental Background</p>
+
+                                <audio
+                                    ref={audioRef}
+                                    src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+                                    onPlay={() => setIsAudioPlaying(true)}
+                                    onPause={() => setIsAudioPlaying(false)}
+                                />
+
+                                <div className="flex gap-6 items-center">
+                                    <button
+                                        onClick={() => isAudioPlaying ? handleAudio('pause') : handleAudio('play')}
+                                        className="btn btn-primary rounded-full w-20 h-20 justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform"
+                                    >
+                                        {isAudioPlaying ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
+                                    </button>
+                                </div>
+
+                                <div className="mt-12 w-full max-w-md">
+                                    <div className="flex justify-between text-xs text-muted mb-2">
+                                        <span>Live Session</span>
+                                        <span>Tracking Active</span>
+                                    </div>
+                                    <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                                        <motion.div
+                                            animate={isAudioPlaying ? { x: ["-100%", "100%"] } : { x: "0%" }}
+                                            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                            className="h-full w-1/2 bg-primary"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -298,25 +447,31 @@ function TutorDashboard({ user, onLogout }) {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto pr-2">
                     <h3 className="text-sm font-semibold uppercase text-muted mb-4 flex items-center gap-2">
-                        <Bell size={16} /> Recent Alerts
+                        <Bell size={16} /> Key Alerts
                     </h3>
-                    {alerts.length === 0 && <p className="text-xs text-muted italic">No active alerts</p>}
-                    {alerts.map((alert, i) => (
-                        <div key={i} className="alert-item">
-                            <div className="font-bold text-xs">⚠️ {alert.alert_type}</div>
-                            <div className="text-xs">{alert.message}</div>
-                        </div>
-                    ))}
+                    {alerts.length === 0 && <p className="text-xs text-muted italic">Monitoring signals...</p>}
+                    <div className="space-y-3 mb-8">
+                        {alerts.map((alert, i) => (
+                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} key={i} className="alert-item">
+                                <div className="font-bold text-xs">⚠️ {alert.alert_type}</div>
+                                <div className="text-xs text-white/70">{alert.message}</div>
+                            </motion.div>
+                        ))}
+                    </div>
 
-                    <h3 className="text-sm font-semibold uppercase text-muted mt-8 mb-4">Activity Log</h3>
-                    <div className="space-y-2">
+                    <h3 className="text-sm font-semibold uppercase text-muted mb-4 flex items-center gap-2">
+                        <Radio size={16} /> Live Activity Log
+                    </h3>
+                    <div className="space-y-2 bg-black/20 rounded-xl p-4 font-mono text-[10px] max-h-[300px] overflow-y-auto scrollbar-hide">
                         {activities.map((act, i) => (
-                            <div key={i} className="text-xs text-muted border-b border-white/5 pb-1">
-                                <span className="text-primary font-mono">{act.time}</span> {act.event}
+                            <div key={i} className="text-white/40 border-b border-white/5 pb-1 flex justify-between">
+                                <span className="truncate mr-2"><span className="text-primary">[{act.time}]</span> {act.user_id}</span>
+                                <span className="text-white/60">{act.event}</span>
                             </div>
                         ))}
+                        {activities.length === 0 && <p className="text-center italic opacity-30 mt-4">Awaiting data...</p>}
                     </div>
                 </div>
 
@@ -374,6 +529,7 @@ function TutorDashboard({ user, onLogout }) {
                     <p className="text-sm">Human-in-the-Loop Prototype: Real-time behavior analysis and remote control interface.</p>
                 </div>
             </div>
+
         </div>
     );
 }

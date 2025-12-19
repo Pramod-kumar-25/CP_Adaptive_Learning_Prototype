@@ -69,27 +69,57 @@ function Home({ onLogin }) {
 
     if (step === 'selection') {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card glass max-w-lg w-full p-12 text-center">
-                    <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Universal Remote</h1>
-                    <p className="text-muted mb-12 text-lg">Choose your portal to enter the adaptive classroom.</p>
+            <div className="home-layout">
+                {/* Background Decor */}
+                <div className="decor-blob blob-primary" />
+                <div className="decor-blob blob-accent" />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <button onClick={() => setStep('learnerLogin')} className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-primary/20 hover:border-primary/50 transition-all group">
-                            <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                <User size={32} />
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="glass hero-card"
+                >
+                    <div className="hero-badge">
+                        Adaptive Learning System
+                    </div>
+                    <h1 className="hero-title">
+                        Universal Control
+                    </h1>
+                    <p className="hero-subtitle">
+                        Seamlessly bridge the gap between instruction and insight. Choose your portal.
+                    </p>
+
+                    <div className="role-grid">
+                        <button
+                            onClick={() => setStep('learnerLogin')}
+                            className="role-card group"
+                        >
+                            <div className="icon-box icon-primary">
+                                <User size={40} />
                             </div>
-                            <span className="font-bold text-xl">Learner Portal</span>
+                            <div className="role-text-container">
+                                <span className="role-title group-hover-primary">Learner</span>
+                                <span className="role-action">Enter Classroom</span>
+                            </div>
                         </button>
 
-                        <button onClick={() => setStep('tutorLogin')} className="flex flex-col items-center gap-4 p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-accent/20 hover:border-accent/50 transition-all group">
-                            <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
-                                <Radio size={32} />
+                        <button
+                            onClick={() => setStep('tutorLogin')}
+                            className="role-card group"
+                        >
+                            <div className="icon-box icon-accent">
+                                <Radio size={40} />
                             </div>
-                            <span className="font-bold text-xl">Tutor Console</span>
+                            <div className="role-text-container">
+                                <span className="role-title group-hover-accent">Tutor</span>
+                                <span className="role-action">Control Console</span>
+                            </div>
                         </button>
                     </div>
                 </motion.div>
+
+                <p className="footer-version">v2.0 • Human-in-the-Loop Architecture</p>
             </div>
         );
     }
@@ -97,39 +127,62 @@ function Home({ onLogin }) {
     const isTutor = step === 'tutorLogin';
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="card glass max-w-md w-full p-8">
-                <button onClick={() => setStep('selection')} className="text-muted hover:text-white mb-6 flex items-center gap-2 text-sm">
-                    <LogOut size={16} className="rotate-180" /> Back to selection
-                </button>
+        <div className="login-layout">
+            <div className="decor-blob blob-primary" style={{ top: '-10%', left: '-10%', opacity: 0.4 }} />
+            <div className="decor-blob blob-accent" style={{ bottom: '-10%', right: '-10%', opacity: 0.4 }} />
 
-                <h2 className="text-3xl font-bold mb-2">{isTutor ? 'Tutor Console' : 'Learner Login'}</h2>
-                <p className="text-muted mb-8 text-sm">Please enter credentials to continue.</p>
+            <button onClick={() => setStep('selection')} className="back-link">
+                <LogOut size={16} className="rotate-180" /> Back to selection
+            </button>
 
-                <form onSubmit={(e) => handleSubmit(e, isTutor ? 'tutor' : 'learner')} className="flex flex-col gap-4">
-                    <div className="text-left space-y-1">
-                        <label className="text-xs font-bold uppercase text-muted px-1">Email</label>
-                        <input type="email" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:border-primary/50" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="login-card glass"
+            >
+                <h2 className="login-title">{isTutor ? 'Tutor Console' : 'Learner Login'}</h2>
+                <p className="login-subtitle">Please enter your credentials to {isTutor ? 'access controls' : 'start learning'}.</p>
+
+                <form onSubmit={(e) => handleSubmit(e, isTutor ? 'tutor' : 'learner')} className="login-form">
+                    <div className="form-group">
+                        <label className="form-label">Email</label>
+                        <input
+                            type="email"
+                            className="form-input"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            placeholder="name@example.com"
+                        />
                     </div>
-                    <div className="text-left space-y-1">
-                        <label className="text-xs font-bold uppercase text-muted px-1">Password</label>
-                        <input type="password" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:border-primary/50" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    <div className="form-group">
+                        <label className="form-label">Password</label>
+                        <input
+                            type="password"
+                            className="form-input"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            placeholder="••••••••"
+                        />
                     </div>
-                    {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
-                    <button type="submit" className={`btn ${isTutor ? 'btn-accent' : 'btn-primary'} w-full justify-center mt-4`}>
+
+                    {error && <p className="error-message">{error}</p>}
+
+                    <button type="submit" className={`form-submit ${isTutor ? 'btn-type-tutor' : 'btn-type-learner'}`}>
                         Enter {isTutor ? 'Console' : 'Classroom'}
                     </button>
                 </form>
 
-                <div className="mt-8 pt-6 border-t border-white/5 text-[10px] text-muted space-y-1">
-                    <p className="font-bold mb-1">Demo Credentials:</p>
+                <div className="demo-credentials">
+                    <p className="demo-label">Demo Credentials:</p>
                     {isTutor ? (
-                        <p>Tutor: tutor@example.com / admin123</p>
+                        <p>tutor@example.com / admin123</p>
                     ) : (
-                        <>
-                            <p>Learners: (pramod, jaswanth, abhi)@example.com</p>
-                            <p>Password: pass123</p>
-                        </>
+                        <div className="text-left inline-block">
+                            <p>learners: (pramod, jaswanth)@example.com</p>
+                            <p>password: pass123</p>
+                        </div>
                     )}
                 </div>
             </motion.div>
@@ -251,123 +304,139 @@ function LearnerDashboard({ user, onLogout }) {
     }, []);
 
     return (
-        <div className="dashboard-layout">
-            <div className="sidebar glass">
-                <div className="flex items-center gap-2 mb-8">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold">L</div>
-                    <div>
-                        <div className="font-bold">Learner</div>
-                        <div className="text-xs text-muted">Online</div>
-                    </div>
-                </div>
-
-                <div className="flex-1">
-                    <h3 className="text-sm font-semibold uppercase text-muted mb-4">Content Controls</h3>
-                    <div className="space-y-2">
-                        <div className={`flex items-center gap-3 p-3 rounded-lg ${mode === 'video' ? 'bg-primary/20 text-primary' : 'text-muted'}`}>
-                            <Video size={18} /> Video Mode
-                        </div>
-                        <div className={`flex items-center gap-3 p-3 rounded-lg ${mode === 'text' ? 'bg-primary/20 text-primary' : 'text-muted'}`}>
-                            <FileText size={18} /> Text Mode
-                        </div>
-                        <div className={`flex items-center gap-3 p-3 rounded-lg ${mode === 'audio' ? 'bg-primary/20 text-primary' : 'text-muted'}`}>
-                            <Music size={18} /> Audio Mode
+        <div className="dashboard-container">
+            {/* SIDEBAR */}
+            <aside className="dash-sidebar">
+                <div className="user-profile">
+                    <div className="avatar-circle">L</div>
+                    <div className="profile-info">
+                        <div className="profile-name">Learner</div>
+                        <div className="profile-status">
+                            <span className="status-dot online"></span> Online
                         </div>
                     </div>
                 </div>
 
-                <button onClick={onLogout} className="btn btn-outline border-none text-muted hover:text-white">
-                    <LogOut size={18} /> Logout
-                </button>
-            </div>
+                <div className="nav-section">
+                    <h3 className="nav-header">Content Controls</h3>
+                    <div className="nav-menu">
+                        <button
+                            className={`nav-item ${mode === 'video' ? 'active' : ''}`}
+                            onClick={() => console.log('Mode handled by backend in this prototype')}
+                        >
+                            <Video size={18} /> <span>Video Mode</span>
+                        </button>
+                        <button className={`nav-item ${mode === 'text' ? 'active' : ''}`}>
+                            <FileText size={18} /> <span>Text Mode</span>
+                        </button>
+                        <button className={`nav-item ${mode === 'audio' ? 'active' : ''}`}>
+                            <Music size={18} /> <span>Audio Mode</span>
+                        </button>
+                    </div>
+                </div>
 
-            <div className="main-content" onScroll={() => trackEvent('scroll', { pos: window.scrollY })}>
+                <div className="sidebar-footer">
+                    <button onClick={onLogout} className="btn-logout">
+                        <LogOut size={18} /> Categories
+                    </button>
+                </div>
+            </aside>
+
+            {/* MAIN CONTENT */}
+            <main className="dash-content" onScroll={() => trackEvent('scroll', { pos: window.scrollY })}>
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={mode}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="content-display"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="content-wrapper"
                     >
-                        <h2 className="text-3xl font-bold mb-6 capitalize">{mode} Lessons</h2>
+                        <header className="content-header">
+                            <h2 className="section-title">{mode} Lessons</h2>
+                        </header>
 
                         {mode === 'video' && (
-                            <div className="flex flex-col h-[82vh] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/5 group relative">
-                                <div id="yt-player" className="w-full h-full absolute inset-0"></div>
-                                <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/60 to-transparent backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <div className="flex justify-between items-end">
-                                        <div>
-                                            <div className="text-primary text-xs font-bold uppercase tracking-wider mb-2">Module 1 • Introduction</div>
-                                            <h2 className="text-3xl font-bold text-white mb-1">Neural Networks: The Complete Foundation</h2>
-                                            <p className="text-sm text-white/50">Comprehensive Behavioral Tracking Active</p>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-xs text-green-500 bg-green-500/10 px-4 py-2 rounded-full border border-green-500/20">
-                                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                            LIVE SENSOR DATA
+                            <div className="lesson-card">
+                                <div className="video-container">
+                                    <div id="yt-player" className="video-frame"></div>
+                                </div>
+                                <div className="lesson-details">
+                                    <div className="lesson-meta">
+                                        <span className="module-tag">Module 1 • Introduction</span>
+                                        <div className="live-badge">
+                                            <span className="status-dot pulse"></span> LIVE SENSOR DATA
                                         </div>
                                     </div>
+                                    <h1 className="lesson-title">Neural Networks: The Complete Foundation</h1>
+                                    <p className="tracking-status">Comprehensive Behavioral Tracking Active</p>
                                 </div>
                             </div>
                         )}
 
                         {mode === 'text' && (
-                            <div className="card glass">
-                                <p className="text-lg leading-relaxed mb-4">
-                                    Adaptive learning systems focus on using technology to provide customized learning experiences.
-                                    By tracking real-time behavioral signals, teachers can understand when a student is struggling
-                                    or disengaged...
-                                </p>
-                                <p className="text-lg leading-relaxed mb-4">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                                </p>
-                                <button onClick={() => trackEvent('scroll', { section: 'end' })} className="btn btn-primary">Mark as Read</button>
+                            <div className="lesson-card text-mode">
+                                <div className="text-content">
+                                    <h3 className="text-chapter">Chapter 1: The Perceptron</h3>
+                                    <p className="text-paragraph">
+                                        Adaptive learning systems focus on using technology to provide customized learning experiences.
+                                        By tracking real-time behavioral signals, teachers can understand when a student is struggling
+                                        or disengaged. This allows for immediate intervention and personalized content delivery.
+                                    </p>
+                                    <p className="text-paragraph">
+                                        Neural networks are computing systems vaguely inspired by the biological neural networks that constitute animal brains.
+                                        Such systems "learn" to perform tasks by considering examples, generally without being programmed with task-specific rules.
+                                    </p>
+                                </div>
+                                <div className="action-row">
+                                    <button onClick={() => trackEvent('scroll', { section: 'end' })} className="btn-primary-action">
+                                        Mark as Read
+                                    </button>
+                                </div>
                             </div>
                         )}
 
                         {mode === 'audio' && (
-                            <div className="card glass flex flex-col items-center py-12">
-                                <div className={`w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center mb-6 border-4 border-primary/20 ${isAudioPlaying ? 'animate-pulse' : ''}`}>
-                                    <Music size={64} className="text-primary" />
+                            <div className="lesson-card audio-mode">
+                                <div className="audio-visualizer">
+                                    <div className={`visualizer-circle ${isAudioPlaying ? 'playing' : ''}`}>
+                                        <Music size={48} />
+                                    </div>
+                                    {isAudioPlaying && <div className="wave-animation"></div>}
                                 </div>
-                                <h3 className="text-2xl font-bold mb-2">Podcast: The Future of Pedagogy</h3>
-                                <p className="text-muted mb-8">Episode 12 • Instrumental Background</p>
+
+                                <div className="audio-info">
+                                    <span className="module-tag">Episode 12 • Instrumental Background</span>
+                                    <h1 className="lesson-title">Podcast: The Future of Pedagogy</h1>
+                                </div>
 
                                 <audio
                                     ref={audioRef}
                                     src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
                                     onPlay={() => setIsAudioPlaying(true)}
                                     onPause={() => setIsAudioPlaying(false)}
+                                    className="hidden-audio"
                                 />
 
-                                <div className="flex gap-6 items-center">
+                                <div className="audio-controls">
                                     <button
                                         onClick={() => isAudioPlaying ? handleAudio('pause') : handleAudio('play')}
-                                        className="btn btn-primary rounded-full w-20 h-20 justify-center shadow-lg shadow-primary/20 hover:scale-110 transition-transform"
+                                        className="btn-play-pause"
                                     >
                                         {isAudioPlaying ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
                                     </button>
                                 </div>
 
-                                <div className="mt-12 w-full max-w-md">
-                                    <div className="flex justify-between text-xs text-muted mb-2">
-                                        <span>Live Session</span>
-                                        <span>Tracking Active</span>
-                                    </div>
-                                    <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                                        <motion.div
-                                            animate={isAudioPlaying ? { x: ["-100%", "100%"] } : { x: "0%" }}
-                                            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                                            className="h-full w-1/2 bg-primary"
-                                        />
+                                <div className="lesson-meta mt-6">
+                                    <div className="live-badge">
+                                        <span className="status-dot pulse"></span> Tracking Active
                                     </div>
                                 </div>
                             </div>
                         )}
                     </motion.div>
                 </AnimatePresence>
-            </div>
+            </main>
         </div>
     );
 }
@@ -434,102 +503,117 @@ function TutorDashboard({ user, onLogout }) {
     };
 
     return (
-        <div className="dashboard-layout">
-            <div className="sidebar glass">
-                <div className="flex items-center gap-2 mb-8">
-                    <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center font-bold text-white">T</div>
-                    <div>
-                        <div className="font-bold">Tutor Admin</div>
-                        <div className="text-xs flex items-center gap-1">
-                            <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-                            {isLive ? 'System Live' : 'Connecting...'}
+        <div className="dashboard-container">
+            {/* SIDEBAR - SPLIT LAYOUT */}
+            <aside className="tutor-sidebar">
+                {/* TOP HALF: Profile & Alerts */}
+                <div className="sidebar-top">
+                    <div className="user-profile">
+                        <div className="avatar-circle tutor-avatar">T</div>
+                        <div className="profile-info">
+                            <div className="profile-name">Tutor Admin</div>
+                            <div className="profile-status">
+                                <span className={`status-dot ${isLive ? 'online pulse' : 'offline'}`}></span>
+                                {isLive ? 'System Live' : 'Connecting...'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="alert-section">
+                        <h3 className="nav-header flex items-center gap-2">
+                            <Bell size={14} /> Critical Alerts
+                        </h3>
+                        {alerts.length === 0 && <div className="alert-empty">System Nominal. Monitoring...</div>}
+                        <div className="alert-list">
+                            {alerts.map((alert, i) => (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    key={i}
+                                    className="alert-card"
+                                >
+                                    <div className="alert-header">⚠️ {alert.alert_type}</div>
+                                    <div className="alert-body">{alert.message}</div>
+                                </motion.div>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto pr-2">
-                    <h3 className="text-sm font-semibold uppercase text-muted mb-4 flex items-center gap-2">
-                        <Bell size={16} /> Key Alerts
-                    </h3>
-                    {alerts.length === 0 && <p className="text-xs text-muted italic">Monitoring signals...</p>}
-                    <div className="space-y-3 mb-8">
-                        {alerts.map((alert, i) => (
-                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} key={i} className="alert-item">
-                                <div className="font-bold text-xs">⚠️ {alert.alert_type}</div>
-                                <div className="text-xs text-white/70">{alert.message}</div>
-                            </motion.div>
-                        ))}
+                {/* BOTTOM HALF: Debug Console */}
+                <div className="sidebar-console">
+                    <div className="console-header">
+                        <Radio size={14} /> System Logs
                     </div>
-
-                    <h3 className="text-sm font-semibold uppercase text-muted mb-4 flex items-center gap-2">
-                        <Radio size={16} /> Live Activity Log
-                    </h3>
-                    <div className="space-y-2 bg-black/20 rounded-xl p-4 font-mono text-[10px] max-h-[300px] overflow-y-auto scrollbar-hide">
+                    <div className="console-terminal">
                         {activities.map((act, i) => (
-                            <div key={i} className="text-white/40 border-b border-white/5 pb-1 flex justify-between">
-                                <span className="truncate mr-2"><span className="text-primary">[{act.time}]</span> {act.user_id}</span>
-                                <span className="text-white/60">{act.event}</span>
+                            <div key={i} className="log-line">
+                                <span className="log-time">[{act.time}]</span>
+                                <span className="log-user">{act.user_id}</span>
+                                <span className="log-event">{act.event}</span>
                             </div>
                         ))}
-                        {activities.length === 0 && <p className="text-center italic opacity-30 mt-4">Awaiting data...</p>}
+                        {activities.length === 0 && <div className="log-line opacity-30">Initializing data stream...</div>}
                     </div>
+
+                    <button onClick={onLogout} className="btn-logout mt-4">
+                        <LogOut size={16} /> Terminate Session
+                    </button>
                 </div>
+            </aside>
 
-                <button onClick={onLogout} className="btn btn-outline border-none text-muted hover:text-white">
-                    <LogOut size={18} /> Logout
-                </button>
-            </div>
+            {/* MAIN CONTENT */}
+            <main className="dash-content">
+                <header className="content-header">
+                    <h2 className="section-title">Universal Remote Dashboard</h2>
+                </header>
 
-            <div className="main-content">
-                <h2 className="text-3xl font-bold mb-8">Universal Remote Dashboard</h2>
-
-                <div className="grid grid-cols-1 gap-6">
-                    {students.length === 0 && <p className="text-muted italic">No students currently online.</p>}
+                <div className="student-grid">
+                    {students.length === 0 && <div className="empty-state">No students connected. Waiting for active sessions...</div>}
                     {students.map(student => (
-                        <div key={student.id} className="card glass flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center font-bold">{student.email[0].toUpperCase()}</div>
+                        <div key={student.id} className="student-card glass">
+                            <div className="student-info">
+                                <div className="avatar-circle student-avatar">{student.email[0]}</div>
                                 <div>
-                                    <div className="font-bold text-xl flex items-center gap-2">
+                                    <div className="student-name">
                                         {student.email}
-                                        <span className={`w-2 h-2 rounded-full ${student.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`}></span>
+                                        <span className={`status-dot ${student.status === 'online' ? 'online' : 'offline'} ml-2`}></span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`badge badge-${student.mode}`}>{student.mode.toUpperCase()}</span>
-                                        <span className="text-xs text-muted">{student.status}</span>
+                                    <div className="student-meta">
+                                        <span className={`role-badge badge-${student.mode}`}>{student.mode}</span>
+                                        <span className="status-text">{student.status}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="control-actions">
                                 <button
                                     onClick={() => switchMode(student.id, 'video')}
-                                    className={`btn ${student.mode === 'video' ? 'btn-primary' : 'btn-outline'}`}
+                                    className={`action-btn ${student.mode === 'video' ? 'active' : ''}`}
                                 >
-                                    <Video size={18} /> Video
+                                    <Video size={16} /> Video
                                 </button>
                                 <button
                                     onClick={() => switchMode(student.id, 'text')}
-                                    className={`btn ${student.mode === 'text' ? 'btn-primary' : 'btn-outline'}`}
+                                    className={`action-btn ${student.mode === 'text' ? 'active' : ''}`}
                                 >
-                                    <FileText size={18} /> Text
+                                    <FileText size={16} /> Text
                                 </button>
                                 <button
                                     onClick={() => switchMode(student.id, 'audio')}
-                                    className={`btn ${student.mode === 'audio' ? 'btn-primary' : 'btn-outline'}`}
+                                    className={`action-btn ${student.mode === 'audio' ? 'active' : ''}`}
                                 >
-                                    <Music size={18} /> Audio
+                                    <Music size={16} /> Audio
                                 </button>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="mt-12 opacity-50 text-center">
-                    <p className="text-sm">Human-in-the-Loop Prototype: Real-time behavior analysis and remote control interface.</p>
-                </div>
-            </div>
-
+                <footer className="dashboard-footer">
+                    Human-in-the-Loop Prototype: Real-time behavior analysis and remote control interface.
+                </footer>
+            </main>
         </div>
     );
 }

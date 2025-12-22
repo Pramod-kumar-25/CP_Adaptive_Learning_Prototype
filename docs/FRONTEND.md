@@ -2,24 +2,35 @@
 
 ## Tech Details
 - **Framework**: React 18+
-- **Styling**: Vanilla CSS with CSS Variables for theme management.
+- **Styling**: Modern CSS with Glassmorphism, CSS Variables, and Flex/Grid layouts.
 - **Icons**: Lucide-React
-- **Animations**: Framer Motion
+- **Animations**: Framer Motion (for modal-like cards and mode switching).
 
-## Key Flows
+## UI Architecture
 
-### 1. Learner Flow
-- **Dashboard**: A clean, focused interface with a main content area.
-- **Event Tracking**: 
-    - `scroll`: Debounced tracking of page movement.
-    - `video`: Mock events for play/pause to simulate YouTube API integration.
-    - `idle`: A 30-second timer that resets on mouse movement. If triggered, it sends an 'idle' event.
-- **WebSocket Listener**: Listens for `MODE_SWITCH` messages. Updates the `mode` local state, which swaps the rendered component.
+### 1. Unified Landing Portal
+The application starts with a **Role Selection** screen (`step: 'selection'`). 
+- **Learner Portal**: Leads to the classroom environment.
+- **Tutor Console**: Leads to the control center.
+- **Role Enforcement**: Authentication is checked against the selected role to prevent spoofing.
 
-### 2. Tutor Flow
-- **Dashboard**: A command center showing active students.
-- **Alert Stream**: Real-time display of behavior-triggered alerts (e.g., "Excessive Pausing").
-- **Remote Control**: Buttons that trigger `POST /control-action` to the backend.
+### 2. Learner Dashboard
+A focused learning environment with a persistent sidebar.
+- **Cinema Mode Video**: Uses the **YouTube IFrame Player API** for pixel-perfect tracking of `play` and `pause` events directly within the embedded player.
+- **Audio Visualizer**: Features a pulsing animation synced with the background instrumental podcast.
+- **Behavioral Sensors**:
+    - `scroll`: Tracks reading progress in Text Mode.
+    - `idle`: 30-second inactivity sensor that resets on interaction.
+    - `live`: Constant status ping to the Tutor via WebSockets.
 
-## Design Aesthetics
-The UI uses "Glassmorphism" (semi-transparent blurred cards) on a dark slate background to provide a modern, premium feel suitable for a tech-forward prototype.
+### 3. Tutor Dashboard (Split Layout)
+A command center designed for high-density monitoring.
+- **Control Grid**: Individual cards for each student to remotely trigger `MODE_SWITCH`.
+- **System Log Terminal**: A bottom-anchored, monospace terminal that streams raw JSON-like events directly from the student's clients.
+- **Critical Alerts**: A top-priority section for behavior-driven warnings (e.g., "Excessive Pausing").
+
+## Design Language
+The UI uses a "Dark Mode First" philosophy with:
+- **Glassmorphism**: 半透明 blurred backgrounds for a premium, lightweight feel.
+- **Neon Accents**: Primary (Indigo) for Learners, Accent (Emerald) for Tutors.
+- **Vibrant Blobs**: Animated background decor to provide depth.

@@ -4,20 +4,26 @@ This prototype demonstrates a **Teacher with a Universal Remote Control** concep
 
 ## 🚀 Vision
 In a world of digital-first education, students often get distracted or stuck. This system provides:
-1. **Real-time Insights**: Tutors see live alerts when a student is disengaged (e.g., excessive pausing or long idle periods).
+1. **Real-time Insights**: Tutors see live alerts and a **Live System Log Terminal** when a student is disengaged (e.g., excessive pausing or long idle periods).
 2. **Instant Intervention**: Tutors can switch the student's active content mode with a single click—no page refreshes, no delays.
 3. **Human-in-the-Loop**: Instead of a purely automated black-box AI, this empowers the human educator with "superpowers."
 
+## 🎨 Premium Experience
+The prototype features a modern **Glassmorphism** interface with neon highlights:
+- **Hero Landing**: An immersive role-selection portal for Learners and Tutors.
+- **Cinema Mode**: A high-end video player with auto-hiding metadata overlays.
+- **Audio Visualizers**: Dynamic pulse animations for audio-based learning.
+
 ## 🛠️ Tech Stack
-- **Frontend**: React (Vite), Tailwind-inspired CSS, Lucide Icons, Framer Motion.
+- **Frontend**: React (Vite), Glassmorphism CSS, Framer Motion, Lucide Icons.
 - **Backend**: Python (FastAPI), WebSockets for real-time signaling.
-- **Database**: Supabase (PostgreSQL) for persistence.
+- **Database**: Supabase (PostgreSQL) for persistence and authentication.
 
 ## 🏃 Quick Start
 
 ### 1. Database Setup
 1. Create a project at [Supabase](https://supabase.com).
-2. Run the SQL located in `/database/schema.sql` in the Supabase SQL Editor.
+2. Run the SQL located in `/database/schema.sql` to setup tables and default learners.
 3. Obtain your `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
 
 ### 2. Backend Setup
@@ -36,10 +42,10 @@ In a world of digital-first education, students often get distracted or stuck. T
 3. Run dev server: `npm run dev` (Runs on port 5173)
 
 ### 4. Running the Demo
-1. Open two browser windows/tabs.
-2. Tab 1: Login as **Tutor**.
-3. Tab 2: Login as **Learner**.
-4. In Learner tab, click "Mock Pause" repeatedly (5 times in 60s).
-5. Watch the Tutor tab for the real-time Alert.
-6. In Tutor tab, click "Text" or "Audio" buttons.
-7. Watch the Learner tab update instantly!
+1. Open two browser windows.
+2. Choose your role on the **Universal Remote** landing page.
+3. **Tutor**: Login with `tutor@example.com` / `admin123`.
+4. **Learner**: Login with `pramod@example.com` / `pass123`.
+5. In Learner tab, play the YouTube video or Audio podcast.
+6. Watch the Tutor console's **System Log** for real-time play/pause events.
+7. In Tutor console, click "Text" or "Audio" to remotely switch the Learner's view!
